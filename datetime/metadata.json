@@ -1,0 +1,19 @@
+{
+    "KPlugin": {
+        "Id": "local.datetime",
+        "Name": "datetime",
+        "Description": "Date and time on one line with configurable formats; click for a calendar",
+        "Icon": "preferences-system-time",
+        "Category": "Date and Time",
+        "Authors": [
+            {
+                "Name": "Local"
+            }
+        ],
+        "License": "GPL-2.0-or-later",
+        "Version": "1.0",
+        "FormFactors": ["desktop", "panel"]
+    },
+    "KPackageStructure": "Plasma/Applet",
+    "X-Plasma-API-Minimum-Version": "6.0"
+}
