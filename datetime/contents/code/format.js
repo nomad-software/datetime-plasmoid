@@ -20,6 +20,25 @@ function format(date, fmt) {
     return Qt.formatDateTime(date, fmt.split("[th]").join(suffix));
 }
 
+function escapeHtml(s) {
+    return s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+}
+
+function escapeRegExp(s) {
+    return s.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+}
+
+// Returns formatted time text as rich text with the AM/PM marker shrunk to
+// `scale` of `pointSize`, e.g. "12:30 PM" -> "12:30 <span ...>PM</span>".
+function smallAmPm(text, pointSize, scale) {
+    const markers = [Qt.locale().amText, Qt.locale().pmText, "AM", "PM"]
+        .filter(m => m.length > 0).map(escapeRegExp);
+    const re = new RegExp("(" + markers.join("|") + ")", "gi");
+    const small = (pointSize * scale).toFixed(1);
+    return escapeHtml(text).replace(re,
+        '<span style="font-size:' + small + 'pt">$1</span>');
+}
+
 // Joins the formatted date and time with the separator, skipping empty parts.
 function line(date, dateFmt, timeFmt, separator) {
     const parts = [];

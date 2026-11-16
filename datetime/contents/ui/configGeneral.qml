@@ -90,7 +90,8 @@ KCM.SimpleKCM {
                 }
                 QQC2.Label {
                     visible: text.length > 0
-                    text: preview.timeText
+                    text: Fmt.smallAmPm(preview.timeText, preview.pointSize, 0.6)
+                    textFormat: Text.RichText
                     font.bold: boldCheck.checked
                     font.pointSize: preview.pointSize
                 }

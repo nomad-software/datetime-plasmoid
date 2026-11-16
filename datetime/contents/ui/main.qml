@@ -20,7 +20,8 @@ PlasmoidItem {
     preferredRepresentation: compactRepresentation
 
     toolTipMainText: Qt.formatDate(now, Qt.locale().dateFormat(Locale.LongFormat))
-    toolTipSubText: Qt.formatTime(now, Qt.locale().timeFormat(Locale.LongFormat))
+    // Locale long time format, but with the time zone abbreviated (GMT, BST, ...).
+    toolTipSubText: Qt.formatTime(now, Qt.locale().timeFormat(Locale.LongFormat).replace(/t+/g, "t"))
 
     Timer {
         interval: 1000
@@ -69,7 +70,8 @@ PlasmoidItem {
             }
             PlasmaComponents.Label {
                 visible: text.length > 0
-                text: root.timeText
+                text: Fmt.smallAmPm(root.timeText, compact.pointSize, 0.6)
+                textFormat: Text.RichText
                 font.bold: Plasmoid.configuration.boldText
                 font.pointSize: compact.pointSize
             }
@@ -79,30 +81,50 @@ PlasmoidItem {
     // Changes only when the day changes, so the calendar isn't reset every second.
     readonly property string todayKey: Qt.formatDate(now, "yyyy-MM-dd")
 
-    fullRepresentation: ColumnLayout {
-        Layout.minimumWidth: Kirigami.Units.gridUnit * 26
-        Layout.minimumHeight: Kirigami.Units.gridUnit * 22
+    fullRepresentation: Item {
+        // Seven roughly square day cells plus the month header.
+        readonly property real calendarWidth: Kirigami.Units.gridUnit
+            * (Plasmoid.configuration.showWeekNumbers ? 22 : 19)
+
+        Layout.minimumWidth: calendarWidth + Kirigami.Units.largeSpacing * 2
+        Layout.minimumHeight: Kirigami.Units.gridUnit * 19 + Kirigami.Units.largeSpacing * 2
         Layout.preferredWidth: Layout.minimumWidth
         Layout.preferredHeight: Layout.minimumHeight
-        spacing: Kirigami.Units.smallSpacing
-
-        PlasmaComponents.Label {
-            Layout.alignment: Qt.AlignHCenter
-            text: Qt.formatTime(root.now, Qt.locale().timeFormat(Locale.LongFormat))
-            font.pixelSize: Kirigami.Theme.defaultFont.pixelSize * 2
-        }
-        PlasmaComponents.Label {
-            Layout.alignment: Qt.AlignHCenter
-            text: Fmt.format(root.now, "dddd d[th] MMMM yyyy")
-        }
 
         PlasmaCalendar.MonthView {
             id: monthView
-            Layout.fillWidth: true
-            Layout.fillHeight: true
-            borderOpacity: 0.25
+            anchors.fill: parent
+            anchors.margins: Kirigami.Units.largeSpacing
+            borderWidth: 0
             showWeekNumbers: Plasmoid.configuration.showWeekNumbers
             today: new Date()
+
+            // Match the Today button and arrows to the month heading's size.
+            readonly property real headingSize: viewHeader.heading.font.pixelSize
+            Binding {
+                target: monthView.viewHeader.todayButton
+                when: target !== null
+                property: "font.pixelSize"
+                value: monthView.headingSize
+            }
+            Repeater {
+                model: [monthView.viewHeader.previousButton, monthView.viewHeader.nextButton]
+                delegate: Item {
+                    required property var modelData
+                    Binding {
+                        target: modelData
+                        when: target !== null
+                        property: "icon.width"
+                        value: Math.round(monthView.headingSize * 1.75)
+                    }
+                    Binding {
+                        target: modelData
+                        when: target !== null
+                        property: "icon.height"
+                        value: Math.round(monthView.headingSize * 1.75)
+                    }
+                }
+            }
 
             Connections {
                 target: root
